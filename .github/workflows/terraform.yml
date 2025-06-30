@@ -1,0 +1,66 @@
+name: "Vprofile IAC"
+on:
+  push:
+    branches:
+      - main
+      - stage
+    paths:
+      - terraform/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - terraform/**
+
+env:
+  #AWS deployment credentials
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #s3 bucket for terraform state
+  BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE }}
+  AWS_REGION: us-east-1
+  EKS_CLUSTER: vprofile-eks
+
+jobs:
+  terraform:
+    name: "Apply terraform code changes"
+    runs-on: ubuntu-latest
+    defaults: 
+      run:
+        shell: bash
+        working-directory: ./terraform
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+    
+      - name: Setup terrsform with specific runner version
+        uses: hashicorp/setup-terraform@v3
+        #with:
+        #  terraform_version: "1.1.7"
+
+      - name: Terrform init #initalises terraform
+        id: init #can be referenced by the other tasks
+        run: terraform init -backend-config="bucket=$BUCKET_TF_STATE"
+
+      - name: Terraform format #checks correct format for tf files
+        id: fmt
+        run: terrafrom fmt -check
+
+      - name: Terraform validate #checks syntax etc of tf code
+        id: validate
+        run: terraform validate
+
+      - name: Terraform plan 
+        id: plan
+        run: terraform plan -no-color -input=false -out planfile #info stored in planfile
+        continue-on-error: true #fail check in next step
+
+      - name: Terraform plan status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1 #kills container
+
+      
+
+
+
