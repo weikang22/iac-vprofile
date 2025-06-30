@@ -1,12 +1,12 @@
 name: "Vprofile IAC"
-on:
-  push:
-    branches:
+on: # events to trigger workflow
+  push: # push trigger
+    branches: # branches listed can trigger workflow with a push
       - main
       - stage
-    paths:
-      - terraform/**
-  pull_request:
+    paths: # triggers with commits from this path
+      - terraform/** 
+  pull_request: # workflow triggered on the following pull requests (branch/paths)
     branches:
       - main
     paths:
@@ -23,14 +23,14 @@ env:
 
 jobs:
   terraform:
-    name: "Apply terraform code changes"
-    runs-on: ubuntu-latest
-    defaults: 
+    name: "Apply terraform code changes" # name of job
+    runs-on: ubuntu-latest # select a runner (container) on github actions. different kinds e.g. ubuntu, macos, windows. this runner is commonly used and includes prebuilt packages
+    defaults: # defaults to use for runner
       run:
         shell: bash
         working-directory: ./terraform
     
-    steps:
+    steps: #steps for the workflow
       - name: Checkout source code
         uses: actions/checkout@v4
     
