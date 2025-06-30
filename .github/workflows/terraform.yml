@@ -45,7 +45,7 @@ jobs:
 
       - name: Terraform format #checks correct format for tf files
         id: fmt
-        run: terrafrom fmt -check
+        run: terraform fmt -check
 
       - name: Terraform validate #checks syntax etc of tf code
         id: validate
